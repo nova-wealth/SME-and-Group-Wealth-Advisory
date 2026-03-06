@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import logoUrl from '../Images/Logo for Nova Wealth - Wordmark Style.svg';
 
-const Navbar = () => {
+const Navbar = ({ onDownloadPDF }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -64,9 +64,9 @@ const Navbar = () => {
 
                     {/* Desktop CTAs */}
                     <div className="hidden lg:flex items-center space-x-8">
-                        <a href="#fees" className="text-nova-gold hover:text-white text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-200">
+                        <button onClick={onDownloadPDF} className="text-nova-gold hover:text-white text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-200">
                             Download PDF
-                        </a>
+                        </button>
                         <a href="#contact" className="bg-[#c5a046] text-[#0A101D] hover:bg-[#ebd582] px-6 py-2.5 rounded border border-[#c5a046] text-[13px] font-bold transition-all duration-300">
                             Book Discovery Call
                         </a>
@@ -102,9 +102,15 @@ const Navbar = () => {
                         </a>
                     ))}
                     <div className="pt-4 flex flex-col space-y-4">
-                        <a href="#fees" className="text-center text-nova-gold py-3 font-bold uppercase tracking-wider">
+                        <button
+                            onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                onDownloadPDF?.();
+                            }}
+                            className="w-full text-center text-nova-gold py-3 font-bold uppercase tracking-wider"
+                        >
                             Download PDF
-                        </a>
+                        </button>
                         <a href="#contact" className="text-center bg-nova-gold text-nova-navy py-3 rounded font-bold">
                             Book Discovery Call
                         </a>

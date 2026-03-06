@@ -6,11 +6,16 @@
   body {
     @apply bg-white text-nova-black font-sans antialiased overflow-x-hidden;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-montserrat font-bold text-nova-black;
   }
-  
+
   p {
     @apply text-nova-gray-700 leading-relaxed text-lg;
   }
@@ -20,7 +25,7 @@
   .container-custom {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
-  
+
   .btn-primary {
     @apply inline-flex items-center justify-center px-8 py-3 border-2 border-transparent text-base font-semibold rounded-md text-nova-navy bg-nova-gold hover:bg-yellow-500 hover:text-nova-black transition-colors duration-300;
   }
@@ -28,11 +33,11 @@
   .btn-outline {
     @apply inline-flex items-center justify-center px-8 py-3 border-2 border-nova-navy text-base font-semibold rounded-md text-nova-navy bg-transparent hover:bg-nova-navy hover:text-white transition-colors duration-300;
   }
-  
+
   .section-padding {
     @apply py-20 lg:py-28;
   }
-  
+
   .glass-card {
     @apply bg-white border border-nova-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300;
   }
@@ -40,4 +45,41 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Print Styles */
+@media print {
+
+  /* Hide navigation (including logo) and footer */
+  nav,
+  footer,
+  .lg\:hidden {
+    display: none !important;
+  }
+
+  /* Ensure text is black and background is white for printing */
+  body,
+  main {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Prevent page breaks inside important elements like cards and sections */
+  .glass-card,
+  section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Force background colors and images to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Adjust margins and paddings for better print layout */
+  .section-padding {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
 }
