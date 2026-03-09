@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowRight, TrendingUp, ShieldCheck, Users } from 'lucide-react';
 import videoBg from '../videos/Business_Growth.mp4';
 
-const Hero = () => {
+const Hero = ({ onGetStarted }) => {
     return (
         <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-nova-navy">
             {/* Background Video */}
@@ -38,9 +38,12 @@ const Hero = () => {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 md:mb-28">
-                        <a href="#contact" className="w-full sm:w-auto bg-[#c5a046] hover:bg-nova-gold text-nova-navy px-8 py-3.5 rounded text-sm font-semibold transition-all duration-300">
-                            Book Discovery Call
-                        </a>
+                        <button
+                            onClick={onGetStarted}
+                            className="w-full sm:w-auto bg-[#c5a046] hover:bg-nova-gold text-nova-navy px-8 py-3.5 rounded text-sm font-semibold transition-all duration-300"
+                        >
+                            View Rates & Get Started
+                        </button>
                         <a href="#approach" className="w-full sm:w-auto border border-white/20 text-white hover:bg-white hover:text-nova-navy px-8 py-3.5 rounded text-sm font-semibold transition-all duration-300 backdrop-blur-sm bg-black/10">
                             Explore Our Approach
                         </a>

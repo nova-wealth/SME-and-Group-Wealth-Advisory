@@ -19,8 +19,8 @@ const PerformanceFee = () => {
                                 <Percent className="h-5 w-5 text-nova-gold" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-xl mb-1">20% Performance Fee</h4>
-                                <p className="text-nova-gray-400 text-sm">Charged solely on the excess returns generated above the high-water mark and hurdle rate.</p>
+                                <h4 className="font-bold text-xl mb-1 text-white">20% Performance Fee</h4>
+                                <p className="text-white/90 text-sm">Charged solely on the excess returns generated above the high-water mark and hurdle rate.</p>
                             </div>
                         </div>
                     </div>
@@ -29,12 +29,12 @@ const PerformanceFee = () => {
                         <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-nova-gold/10 rounded-bl-full -z-10"></div>
 
-                            <h4 className="text-xl font-bold mb-6 flex items-center gap-2">
+                            <h4 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
                                 <ShieldAlert className="h-5 w-5 text-nova-gold" />
                                 The High-Water Mark Principle
                             </h4>
 
-                            <div className="space-y-4 text-sm text-nova-gray-300">
+                            <div className="space-y-4 text-sm text-white">
                                 <p>
                                     To protect our clients, we employ a strict <strong>High-Water Mark</strong> policy. This means if the portfolio value declines,
                                     we must first recover all losses before any future performance fees can be charged.
