@@ -1,91 +1,180 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Check, Copy, Download } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Download, Phone, Mail, Globe } from 'lucide-react';
 import logoUrl from '../Images/Logo for Nova Wealth - Wordmark Style.svg';
 import PrintableRateCard from './PrintableRateCard';
 
-const InteractiveRateCard = ({ onBack }) => {
-    const [selectedService, setSelectedService] = useState(null);
+const InteractiveRateCard = ({ onBack, onContinue }) => {
+    const [selectedServices, setSelectedServices] = useState([]);
 
     const services = [
         {
-            category: "Advisory Fees",
+            category: "Onboarding Fees (One-time)",
             items: [
                 {
-                    id: 'adv-1',
-                    title: "10M – 50M KES",
-                    description: "Annual Management Fee",
-                    price: "1.50%",
+                    id: 'onb-1',
+                    title: "Chama Onboarding",
+                    description: "Initial setup for Investment Groups including KYC and entity verification.",
+                    price: "KES 10,000",
+                    duration: "Once-off",
+                },
+                {
+                    id: 'onb-2',
+                    title: "SME / Entrepreneur Onboarding",
+                    description: "Initial setup for businesses including risk profiling and onboarding docs.",
+                    price: "KES 20,000",
+                    duration: "Once-off",
+                },
+                {
+                    id: 'onb-3',
+                    title: "SACCO Onboarding",
+                    description: "Initial setup for Credit Unions including SASRA alignment and verification.",
+                    price: "KES 30,000",
+                    duration: "Once-off",
+                }
+            ]
+        },
+        {
+            category: "Annual Retainer Fees (Advisory)",
+            items: [
+                {
+                    id: 'ret-1',
+                    title: "Chama — Small (<20 members)",
+                    description: "Annual retainer for small investment groups.",
+                    price: "KES 100K - 200K",
                     duration: "Annually",
                 },
                 {
-                    id: 'adv-2',
-                    title: "50M – 100M KES",
-                    description: "Annual Management Fee",
-                    price: "1.25%",
+                    id: 'ret-2',
+                    title: "Chama — Medium (21-50 members)",
+                    description: "Annual retainer for medium-sized investment groups.",
+                    price: "KES 200K - 350K",
                     duration: "Annually",
                 },
                 {
-                    id: 'adv-3',
-                    title: "100M – 500M KES",
-                    description: "Annual Management Fee",
-                    price: "1.00%",
+                    id: 'ret-3',
+                    title: "SME — Small (Turnover 5M-50M)",
+                    description: "Advisory for small enterprises and startups.",
+                    price: "KES 170K - 350K",
                     duration: "Annually",
                 },
                 {
-                    id: 'adv-4',
-                    title: "500M+ KES",
-                    description: "Annual Management Fee",
-                    price: "Negotiable",
+                    id: 'ret-4',
+                    title: "SME — Medium (Turnover 50M-500M)",
+                    description: "Advisory for established medium businesses.",
+                    price: "KES 350K - 700K",
+                    duration: "Annually",
+                },
+                {
+                    id: 'ret-5',
+                    title: "SACCO — Small (<500 members)",
+                    description: "Retainer for smaller deposit/non-deposit SACCOs.",
+                    price: "KES 280K - 520K",
+                    duration: "Annually",
+                },
+                {
+                    id: 'ret-6',
+                    title: "SACCO — Medium (500-2,000 members)",
+                    description: "Retainer for large-scale SACCOs.",
+                    price: "KES 500K - 850K",
                     duration: "Annually",
                 }
             ]
         },
         {
-            category: "Performance Fees",
-            items: [
-                {
-                    id: 'perf-1',
-                    title: "Performance Fee Profile",
-                    description: "Charged solely on excess returns generated above the high-water mark and hurdle rate (Treasury Bill + 2%).",
-                    price: "20%",
-                    duration: "Annualized",
-                }
-            ]
-        },
-        {
-            category: "Specialist Services",
+            category: "Specialist & Project Services",
             items: [
                 {
                     id: 'spec-1',
-                    title: "Corporate Treasury",
-                    description: "Yield optimization for corporate cash reserves and working capital management.",
-                    price: "Custom Quote",
-                    duration: "Per Engagement",
+                    title: "Investment Policy Statement (IPS)",
+                    description: "Governance document with risk profiling and asset allocation framework.",
+                    price: "KES 30K - 80K",
+                    duration: "Project",
                 },
                 {
                     id: 'spec-2',
-                    title: "Group Governance",
-                    description: "Drafting group constitutions, dispute resolution protocols, and management frameworks.",
-                    price: "Custom Quote",
-                    duration: "Per Engagement",
+                    title: "Financial Wellness Workshop",
+                    description: "Group education session for members or staff.",
+                    price: "KES 15K - 50K",
+                    duration: "Per Session",
                 },
                 {
                     id: 'spec-3',
-                    title: "Succession Planning",
-                    description: "Structuring trusts and legal entities to ensure smooth wealth transfer for SME owners.",
-                    price: "Custom Quote",
-                    duration: "Per Engagement",
+                    title: "Business Valuation Advisory",
+                    description: "For SMEs pre-sale, merger, or succession planning.",
+                    price: "KES 80K - 250K",
+                    duration: "Project",
                 },
                 {
                     id: 'spec-4',
-                    title: "Capital Raising",
-                    description: "Advising on debt restructuring and capital acquisition for operational expansion.",
-                    price: "Custom Quote",
-                    duration: "Per Engagement",
+                    title: "Occupational Pension Setup",
+                    description: "Advisory for SMEs establishing umbrella or standalone pensions.",
+                    price: "KES 40K - 100K",
+                    duration: "Project",
+                },
+                {
+                    id: 'spec-5',
+                    title: "Governance Review",
+                    description: "Constitution alignment and dividend/loan policy review.",
+                    price: "KES 25K - 60K",
+                    duration: "Project",
+                },
+                {
+                    id: 'spec-6',
+                    title: "Pick Our Brain from Nova Wealth Experts",
+                    description: "High-impact advisory session for specific SME and Wealth challenges.",
+                    price: "KES 20,000",
+                    duration: "Per Session",
                 }
             ]
         }
     ];
+
+    const handleServiceToggle = (serviceId) => {
+        setSelectedServices(prev =>
+            prev.includes(serviceId)
+                ? prev.filter(id => id !== serviceId)
+                : [...prev, serviceId]
+        );
+    };
+
+    const getSelectedServicesData = () => {
+        return services.flatMap(c => c.items).filter(i => selectedServices.includes(i.id));
+    };
+
+    const calculateTotalStats = () => {
+        const selectedData = getSelectedServicesData();
+
+        let minTotal = 0;
+        let maxTotal = 0;
+        let isRange = false;
+
+        selectedData.forEach(item => {
+            // Extract numbers from "KES 30,000 - 60,000" or "KES 10,000"
+            const prices = item.price.match(/\d+[,]?\d*/g);
+            if (prices) {
+                const nums = prices.map(p => parseInt(p.replace(/,/g, '')));
+                if (nums.length > 1) {
+                    minTotal += nums[0];
+                    maxTotal += nums[1];
+                    isRange = true;
+                } else {
+                    minTotal += nums[0];
+                    maxTotal += nums[0];
+                }
+            }
+        });
+
+        const formatPrice = (num) => new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(num);
+
+        return {
+            totalDisplay: isRange
+                ? `${formatPrice(minTotal)} - ${formatPrice(maxTotal)}`
+                : formatPrice(minTotal),
+            count: selectedServices.length
+        };
+    };
+
+    const totalStats = calculateTotalStats();
 
     const copyURL = () => {
         navigator.clipboard.writeText(window.location.href);
@@ -97,10 +186,10 @@ const InteractiveRateCard = ({ onBack }) => {
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-[#fafaf9] font-sans print:bg-white">
             {/* Sidebar / Branding (Left) - HIDDEN IN PRINT */}
-            <div className="md:w-1/3 lg:w-1/4 bg-nova-navy text-white p-8 flex flex-col md:fixed md:h-screen z-10 print:hidden">
+            <div className="md:w-1/3 lg:w-1/4 bg-nova-navy text-white p-8 flex flex-col md:fixed md:h-screen z-10 overflow-y-auto print:hidden">
                 <div className="mb-10 flex-grow mt-8">
                     <div className="mb-8">
-                        <img src={logoUrl} alt="Nova Wealth" className="w-[200px] h-auto object-contain" />
+                        <img src={logoUrl} alt="Nova Wealth" className="w-[180px] h-auto object-contain" />
                     </div>
 
                     <h2 className="text-2xl font-semibold mb-4 text-white">SME & Group Wealth Advisory</h2>
@@ -116,23 +205,6 @@ const InteractiveRateCard = ({ onBack }) => {
                     </button>
                 </div>
 
-                <div className="space-y-4 text-sm text-nova-gray-400 border-t border-white/10 pt-6">
-                    <p>Nairobi, Kenya</p>
-                    <p>
-                        <a href="mailto:info@novawealth.co.ke" className="hover:text-nova-gold transition-colors">info@novawealth.co.ke</a>
-                    </p>
-                    <p>
-                        <a href="tel:+254000000000" className="hover:text-nova-gold transition-colors">+254 (0) 000 000 000</a>
-                    </p>
-                    <div className="pt-4 flex items-center justify-between">
-                        <button
-                            onClick={copyURL}
-                            className="flex items-center hover:text-white transition-colors text-xs uppercase tracking-widest font-semibold"
-                        >
-                            <Copy className="h-4 w-4 mr-2" /> Copy link
-                        </button>
-                    </div>
-                </div>
             </div>
 
             {/* Main Content (Right) - HIDDEN IN PRINT */}
@@ -150,12 +222,12 @@ const InteractiveRateCard = ({ onBack }) => {
 
                                 <div className="space-y-4">
                                     {categoryGroup.items.map((item) => {
-                                        const isSelected = selectedService === item.id;
+                                        const isSelected = selectedServices.includes(item.id);
 
                                         return (
                                             <div
                                                 key={item.id}
-                                                onClick={() => setSelectedService(item.id)}
+                                                onClick={() => handleServiceToggle(item.id)}
                                                 className={`
                                                     bg-white border rounded-xl p-6 cursor-pointer transition-all duration-300
                                                     hover:shadow-md hover:border-nova-gold/50
@@ -194,28 +266,31 @@ const InteractiveRateCard = ({ onBack }) => {
                     </div>
 
                     {/* Next Steps / Summary Header */}
-                    {selectedService && (
+                    {selectedServices.length > 0 && (
                         <div className="fixed bottom-0 left-0 md:left-1/3 lg:left-1/4 right-0 p-4 bg-white border-t border-nova-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 flex justify-between items-center animate-in slide-in-from-bottom-5">
                             <div className="px-4">
-                                <p className="text-sm text-nova-gray-500">Service selected</p>
-                                <p className="font-bold text-nova-navy truncate max-w-[200px] sm:max-w-xs text-sm sm:text-base">
-                                    {services.flatMap(c => c.items).find(i => i.id === selectedService)?.title}
+                                <p className="text-sm text-nova-gray-500">{totalStats.count} {totalStats.count === 1 ? 'service' : 'services'} selected</p>
+                                <p className="font-bold text-nova-navy text-sm sm:text-base">
+                                    Total Estimated: <span className="text-nova-gold">{totalStats.totalDisplay}</span>
                                 </p>
                             </div>
-                            <button className="btn-primary space-x-2 text-sm px-6 py-3 whitespace-nowrap">
-                                <span>Continue</span>
+                            <button
+                                onClick={() => onContinue(selectedServices)}
+                                className="bg-nova-navy text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-all shadow-lg active:scale-95 whitespace-nowrap"
+                            >
+                                <span>Continue to Booking</span>
                                 <span>→</span>
                             </button>
                         </div>
                     )}
                     {/* Bottom padding so content isn't hidden behind the fixed footer */}
-                    {selectedService && <div className="h-24"></div>}
+                    {selectedServices.length > 0 && <div className="h-24"></div>}
                 </div>
             </div>
 
             {/* FULL DETAILED PDF VERSION - ONLY VISIBLE IN PRINT */}
             <PrintableRateCard />
-        </div>
+        </div >
     );
 };
 
