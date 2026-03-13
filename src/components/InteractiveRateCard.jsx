@@ -183,29 +183,30 @@ const InteractiveRateCard = ({ onContinue }) => {
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-[#fafaf9] font-sans print:bg-white">
             {/* Sidebar / Branding (Left) - HIDDEN IN PRINT */}
-            <div className="md:w-1/3 lg:w-1/4 bg-nova-navy text-white p-8 flex flex-col md:fixed md:h-screen z-10 overflow-y-auto print:hidden">
-                <div className="mb-10 flex-grow mt-8">
-                    <div className="mb-8">
-                        <img src={logoUrl} alt="Nova Wealth" className="w-[180px] h-auto object-contain" />
+            <div className="md:w-1/3 lg:w-1/4 bg-nova-navy text-white p-6 md:p-8 flex flex-col md:fixed md:h-screen z-10 print:hidden overflow-y-auto">
+                <div className="mb-6 md:mb-10 flex-grow mt-4 md:mt-8">
+                    <div className="mb-6 md:mb-8 flex justify-center md:justify-start">
+                        <img src={logoUrl} alt="Nova Wealth" className="w-[140px] md:w-[180px] h-auto object-contain" />
                     </div>
 
-                    <h2 className="text-2xl font-semibold mb-4 text-white">SME & Group Wealth Advisory</h2>
-                    <p className="text-nova-gray-400 text-sm leading-relaxed mb-6">
+                    <h2 className="text-xl md:text-2xl font-semibold mb-4 text-white text-center md:text-left">SME & Group Wealth Advisory</h2>
+                    <p className="text-nova-gray-400 text-xs md:text-sm leading-relaxed mb-6 text-center md:text-left">
                         Access world-class financial structuring, investment management, and corporate advisory services designed specifically for East African businesses and investment groups.
                     </p>
 
-                    <button
-                        onClick={handleDownloadPDF}
-                        className="flex items-center gap-2 px-4 py-2 bg-nova-gold/10 border border-nova-gold/30 rounded text-nova-gold hover:bg-nova-gold hover:text-nova-navy transition-all duration-300 text-sm font-bold uppercase tracking-wider"
-                    >
-                        <Download className="h-4 w-4" /> Download Rate Card
-                    </button>
+                    <div className="flex justify-center md:justify-start">
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 px-4 py-2 bg-nova-gold/10 border border-nova-gold/30 rounded text-nova-gold hover:bg-nova-gold hover:text-nova-navy transition-all duration-300 text-xs font-bold uppercase tracking-wider"
+                        >
+                            <Download className="h-4 w-4" /> Download Rate Card
+                        </button>
+                    </div>
                 </div>
-
             </div>
 
             {/* Main Content (Right) - HIDDEN IN PRINT */}
-            <div className="md:w-2/3 lg:w-3/4 md:ml-auto p-6 md:p-12 lg:p-16 print:hidden">
+            <div className="md:w-2/3 lg:w-3/4 md:ml-auto p-4 sm:p-6 md:p-12 lg:p-16 print:hidden">
                 <div className="max-w-3xl mx-auto">
                     <h3 className="text-3xl lg:text-4xl text-nova-black mb-2">Select a Service</h3>
                     <p className="text-nova-gray-500 mb-10">Choose from our advisory tiers or specialist services below.</p>

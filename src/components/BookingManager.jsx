@@ -339,7 +339,7 @@ ${clientInfo.notes}
     }
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-8">
             {/* Header */}
             <div className="flex items-center mb-8">
                 <button
@@ -358,14 +358,14 @@ ${clientInfo.notes}
             </div>
 
             {step === 1 && primaryServices.length > 0 && (
-                <div className="mb-8 p-6 bg-nova-navy/5 border border-nova-navy/10 rounded-2xl flex items-center justify-between">
-                    <div>
+                <div className="mb-6 md:mb-8 p-4 md:p-6 bg-nova-navy/5 border border-nova-navy/10 rounded-2xl flex items-center justify-between">
+                    <div className="flex-1">
                         <span className="text-nova-navy/60 text-[10px] uppercase tracking-widest font-bold mb-1 block">Your Primary Selection</span>
-                        <h4 className="text-xl font-bold text-nova-navy">{primaryServices[0]?.title}</h4>
-                        <p className="text-nova-gold font-bold">{primaryServices[0]?.price_display || 'Retainer Based'}</p>
+                        <h4 className="text-lg md:text-xl font-bold text-nova-navy">{primaryServices[0]?.title}</h4>
+                        <p className="text-nova-gold font-bold text-sm md:text-base">{primaryServices[0]?.price_display || 'Retainer Based'}</p>
                     </div>
-                    <div className="hidden md:block">
-                        <CheckCircle2 className="w-12 h-12 text-nova-gold opacity-20" />
+                    <div className="hidden sm:block">
+                        <CheckCircle2 className="w-8 h-8 md:w-12 md:h-12 text-nova-gold opacity-20" />
                     </div>
                 </div>
             )}
@@ -387,17 +387,17 @@ ${clientInfo.notes}
                         className="space-y-8"
                     >
                         {/* Expert Guidance Banner */}
-                        <div className="bg-nova-navy text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+                        <div className="bg-nova-navy text-white p-5 md:p-6 rounded-2xl shadow-lg relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-10">
-                                <Sparkles className="w-24 h-24" />
+                                <Sparkles className="w-16 h-16 md:w-24 md:h-24" />
                             </div>
                             <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <ShieldCheck className="w-5 h-5 text-nova-gold" />
-                                    <span className="text-nova-gold font-bold text-xs uppercase tracking-widest">Expert Recommendations</span>
+                                    <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-nova-gold" />
+                                    <span className="text-nova-gold font-bold text-[10px] md:text-xs uppercase tracking-widest">Expert Recommendations</span>
                                 </div>
-                                <h3 className="text-xl font-bold mb-2 text-white">Maximize Your Engagement</h3>
-                                <p className="text-nova-gray-300 text-sm leading-relaxed max-w-2xl">
+                                <h3 className="text-lg md:text-xl font-bold mb-1 md:mb-2 text-white">Maximize Your Engagement</h3>
+                                <p className="text-nova-gray-300 text-xs md:text-sm leading-relaxed max-w-2xl">
                                     As financial experts with 20+ years of experience, we ensure that your advisory focus is built on a professional foundation for long-term wealth strategy.
                                 </p>
                             </div>

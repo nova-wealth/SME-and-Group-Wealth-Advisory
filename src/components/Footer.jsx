@@ -107,8 +107,13 @@ const Footer = ({ onNavigate, currentView }) => {
                     <div className="text-nova-gray-400 text-sm">
                         © 2026 Nova Wealth LLP. All rights reserved.
                     </div>
-                    <div className="text-nova-gray-300 text-xs uppercase tracking-tighter">
-                        Simplified Wealth Advisory
+                    <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-right">
+                        <div className="text-nova-gray-300 text-[10px] uppercase tracking-tighter">
+                            Simplified Wealth Advisory
+                        </div>
+                        <div className="text-nova-gray-400 text-[10px] uppercase tracking-widest font-bold">
+                            Developed By <span className="text-nova-navy">ProspectPilot</span> <span className="text-nova-gold">AI</span>
+                        </div>
                     </div>
                 </div>
             </div>
