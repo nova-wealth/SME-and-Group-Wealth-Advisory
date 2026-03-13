@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, TrendingUp, ShieldCheck, Users } from 'lucide-react';
+import PropTypes from 'prop-types';
+import { TrendingUp, ShieldCheck, Users } from 'lucide-react';
 import videoBg from '../videos/Business_Growth.mp4';
 
 const Hero = ({ onGetStarted }) => {
@@ -25,7 +26,7 @@ const Hero = ({ onGetStarted }) => {
             <div className="container-custom relative z-10">
                 <div className="max-w-4xl mx-auto text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-nova-gold/20 bg-[#0A101D]/40 backdrop-blur-sm text-nova-gold text-[0.65rem] font-medium tracking-[0.2em] uppercase mb-8 animate-fade-in shadow-xl">
-                        SME & Group Advisory
+                        SME &amp; Group Advisory
                     </div>
 
                     <h1 className="text-4xl md:text-5xl lg:text-6xl text-white leading-[1.15] mb-6 font-montserrat font-bold tracking-tight">
@@ -42,7 +43,7 @@ const Hero = ({ onGetStarted }) => {
                             onClick={onGetStarted}
                             className="w-full sm:w-auto bg-[#c5a046] hover:bg-nova-gold text-nova-navy px-8 py-3.5 rounded text-sm font-semibold transition-all duration-300"
                         >
-                            View Rates & Get Started
+                            View Rates &amp; Get Started
                         </button>
                         <a href="#approach" className="w-full sm:w-auto border border-white/20 text-white hover:bg-white hover:text-nova-navy px-8 py-3.5 rounded text-sm font-semibold transition-all duration-300 backdrop-blur-sm bg-black/10">
                             Explore Our Approach
@@ -70,13 +71,17 @@ const Hero = ({ onGetStarted }) => {
                                 <Users className="h-6 w-6" />
                             </div>
                             <h3 className="text-white text-lg font-semibold">Tailored for Groups</h3>
-                            <p className="text-nova-gray-400 text-sm mt-2">Chamas, SACCOs & SME structures</p>
+                            <p className="text-nova-gray-400 text-sm mt-2">Chamas, SACCOs &amp; SME structures</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
     );
+};
+
+Hero.propTypes = {
+    onGetStarted: PropTypes.func.isRequired,
 };
 
 export default Hero;

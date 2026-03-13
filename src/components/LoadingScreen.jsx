@@ -1,6 +1,6 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
-import logoUrl from '../Images/Logo for Nova Wealth - Wordmark Style.svg';
 
 const LoadingScreen = ({ isVisible, text = '' }) => {
     return (
@@ -61,6 +61,11 @@ const LoadingScreen = ({ isVisible, text = '' }) => {
             )}
         </AnimatePresence>
     );
+};
+
+LoadingScreen.propTypes = {
+    isVisible: PropTypes.bool.isRequired,
+    text: PropTypes.string,
 };
 
 export default LoadingScreen;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Menu, X } from 'lucide-react';
 import logoUrl from '../Images/Logo for Nova Wealth - Wordmark Style.svg';
 
@@ -119,6 +120,10 @@ const Navbar = ({ onDownloadPDF }) => {
             )}
         </nav>
     );
+};
+
+Navbar.propTypes = {
+    onDownloadPDF: PropTypes.func.isRequired,
 };
 
 export default Navbar;

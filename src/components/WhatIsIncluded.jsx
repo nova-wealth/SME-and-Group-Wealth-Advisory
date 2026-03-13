@@ -21,7 +21,7 @@ const WhatIsIncluded = () => {
                     <h2 className="text-nova-gold font-sans font-bold tracking-widest text-sm uppercase mb-3">Service Tiers</h2>
                     <h3 className="text-3xl md:text-4xl text-nova-black mb-6">What Is Included</h3>
                     <p className="text-nova-gray-600 text-lg">
-                        Comprehensive wealth management solutions scaled to the size and complexity of your group's assets.
+                        Comprehensive wealth management solutions scaled to the size and complexity of your group&apos;s assets.
                     </p>
                 </div>
 

@@ -13,10 +13,10 @@ const FinalCTA = () => {
             <div className="container-custom relative z-10">
                 <div className="max-w-4xl mx-auto text-center border border-white/10 rounded-3xl p-8 md:p-16 backdrop-blur-md bg-black/20 shadow-2xl">
                     <h2 className="text-3xl md:text-5xl text-white mb-6 leading-tight">
-                        Ready to Structure Your Group's Financial Future?
+                        Ready to Structure Your Group&apos;s Financial Future?
                     </h2>
                     <p className="text-nova-gray-300 text-lg mb-10 max-w-2xl mx-auto">
-                        Schedule a no-obligation discovery call with our institutional wealth specialists to discuss your group's unique needs and investment objectives.
+                        Schedule a no-obligation discovery call with our institutional wealth specialists to discuss your group&apos;s unique needs and investment objectives.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-5">

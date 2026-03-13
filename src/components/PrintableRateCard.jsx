@@ -36,7 +36,7 @@ const PrintableRateCard = () => {
 
                     {section.subtitle && (
                         <p className="text-xs text-nova-gray-600 mb-4 italic leading-relaxed max-w-4xl">
-                            {section.subtitle}
+                            {section.subtitle.replace(/"/g, '&quot;')}
                         </p>
                     )}
 

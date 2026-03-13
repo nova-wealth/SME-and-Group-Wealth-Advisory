@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Check, Copy, Download, Phone, Mail, Globe } from 'lucide-react';
+import PropTypes from 'prop-types';
+import { Check, Download } from 'lucide-react';
 import logoUrl from '../Images/Logo for Nova Wealth - Wordmark Style.svg';
 import PrintableRateCard from './PrintableRateCard';
 
-const InteractiveRateCard = ({ onBack, onContinue }) => {
+const InteractiveRateCard = ({ onContinue }) => {
     const [selectedServices, setSelectedServices] = useState([]);
 
     const services = [
@@ -176,10 +177,6 @@ const InteractiveRateCard = ({ onBack, onContinue }) => {
 
     const totalStats = calculateTotalStats();
 
-    const copyURL = () => {
-        navigator.clipboard.writeText(window.location.href);
-    };
-
     const handleDownloadPDF = () => {
         window.print();
     };
@@ -292,6 +289,10 @@ const InteractiveRateCard = ({ onBack, onContinue }) => {
             <PrintableRateCard />
         </div >
     );
+};
+
+InteractiveRateCard.propTypes = {
+    onContinue: PropTypes.func.isRequired,
 };
 
 export default InteractiveRateCard;

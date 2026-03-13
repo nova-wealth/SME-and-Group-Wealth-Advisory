@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -26,7 +27,7 @@ class ErrorBoundary extends React.Component {
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
                         <p className="text-gray-600 mb-8">
-                            We encountered an unexpected error. Don't worry, your data is safe. Please try refreshing the page.
+                            We encountered an unexpected error. Don&apos;t worry, your data is safe. Please try refreshing the page.
                         </p>
                         <button
                             onClick={() => window.location.reload()}
@@ -35,7 +36,7 @@ class ErrorBoundary extends React.Component {
                             Refresh Page
                         </button>
                         <p className="mt-4 text-xs text-gray-400">
-                            Nova Wealth LLP — SME & Group Advisory
+                            Nova Wealth LLP — SME &amp; Group Advisory
                         </p>
                     </div>
                 </div>
@@ -45,5 +46,9 @@ class ErrorBoundary extends React.Component {
         return this.props.children;
     }
 }
+
+ErrorBoundary.propTypes = {
+    children: PropTypes.node.isRequired,
+};
 
 export default ErrorBoundary;

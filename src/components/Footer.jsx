@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {
     Phone,
     Mail,
@@ -113,6 +114,11 @@ const Footer = ({ onNavigate, currentView }) => {
             </div>
         </footer>
     );
+};
+
+Footer.propTypes = {
+    onNavigate: PropTypes.func.isRequired,
+    currentView: PropTypes.string,
 };
 
 export default Footer;

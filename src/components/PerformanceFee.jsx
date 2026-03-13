@@ -35,7 +35,7 @@ const PerformanceFee = () => {
                             </h4>
 
                             <div className="space-y-4 text-sm text-white">
-                                <p>
+                                <p className="leading-relaxed">
                                     To protect our clients, we employ a strict <strong>High-Water Mark</strong> policy. This means if the portfolio value declines,
                                     we must first recover all losses before any future performance fees can be charged.
                                 </p>

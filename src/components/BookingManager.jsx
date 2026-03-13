@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Calendar as CalendarIcon,
@@ -11,22 +12,48 @@ import {
     CheckCircle2,
     AlertCircle,
     Loader2,
-    ArrowRight
+    ArrowRight,
+    Sparkles,
+    ShieldCheck,
+    Lightbulb
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import Calendar from './Calendar';
 
+const SERVICE_DATA = {
+    'onb-1': { title: 'Chama Onboarding', price: 'KES 10,000' },
+    'onb-2': { title: 'SME / Entrepreneur Onboarding', price: 'KES 20,000' },
+    'onb-3': { title: 'SACCO Onboarding', price: 'KES 30,000' },
+    'ret-1': { title: 'Chama — Small (<20 members)', price: 'KES 100K - 200K' },
+    'ret-2': { title: 'Chama — Medium (21-50 members)', price: 'KES 200K - 350K' },
+    'ret-3': { title: 'SME — Small (Turnover 5M-50M)', price: 'KES 170K - 350K' },
+    'ret-4': { title: 'SME — Medium (Turnover 50M-500M)', price: 'KES 350K - 700K' },
+    'ret-5': { title: 'SACCO — Small (<500 members)', price: 'KES 280K - 520K' },
+    'ret-6': { title: 'SACCO — Medium (500-2,000 members)', price: 'KES 500K - 850K' },
+    'spec-1': { title: 'Investment Policy Statement (IPS)', price: 'KES 30K - 80K' },
+    'spec-2': { title: 'Financial Wellness Workshop', price: 'KES 15K - 50K' },
+    'spec-3': { title: 'Business Valuation Advisory', price: 'KES 80K - 250K' },
+    'spec-4': { title: 'Occupational Pension Setup', price: 'KES 40K - 100K' },
+    'spec-5': { title: 'Governance Review', price: 'KES 25K - 60K' },
+    'spec-6': { title: 'Pick Our Brain from Nova Wealth Experts', price: 'KES 20,000' },
+    'comp-1': { title: 'SME Strategic Advisory', price: 'Complimentary' },
+    'comp-2': { title: 'Group Wealth Planning', price: 'Complimentary' },
+    'comp-3': { title: 'Tax & Compliance Audit', price: 'Complimentary' }
+};
+
 const BookingManager = ({ onBack, initialServiceIds = [] }) => {
     const [step, setStep] = useState(1);
-    const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [existingBookings, setExistingBookings] = useState([]);
     const [fetchingSlots, setFetchingSlots] = useState(false);
+    const [emailError, setEmailError] = useState(null);
 
     // Form State
-    const [selectedServices, setSelectedServices] = useState([]);
+    const [primaryServices, setPrimaryServices] = useState([]);
+    const [complimentaryServices, setComplimentaryServices] = useState([]);
+    const [allServices, setAllServices] = useState([]);
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
     const [clientInfo, setClientInfo] = useState({
@@ -37,81 +64,100 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
         notes: ''
     });
 
-    useEffect(() => {
-        fetchServices();
-    }, []);
+
 
     useEffect(() => {
-        if (selectedDate) {
-            fetchExistingBookings();
-        }
+        const loadServices = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const { data, error } = await supabase
+                    .from('services')
+                    .select('*')
+                    .eq('is_active', true);
+
+                if (error) throw error;
+
+                const fetchedServices = data || [];
+                setAllServices(fetchedServices);
+
+                if (initialServiceIds && initialServiceIds.length > 0) {
+                    const found = fetchedServices.filter((s) =>
+                        initialServiceIds.some((id) =>
+                            s.id === id ||
+                            s.title?.toLowerCase().trim() === id.toLowerCase().trim() ||
+                            (id.includes('-') && s.title?.toLowerCase().includes(id.split('-')[0].toLowerCase()))
+                        )
+                    );
+
+                    if (found.length > 0) {
+                        setPrimaryServices(found);
+                    } else {
+                        // Fallback: If service title is passed but not in DB yet
+                        // Create a virtual primary service so the user still sees what they picked
+                        const virtualServices = initialServiceIds.map(id => {
+                            const data = SERVICE_DATA[id] || { 
+                                title: id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+                                price: 'Retainer / Project Base'
+                            };
+                            return {
+                                id: `virtual-${id}`,
+                                title: data.title,
+                                price_display: data.price,
+                                price: 0,
+                                duration_minutes: 60,
+                                isVirtual: true
+                            };
+                        });
+                        setPrimaryServices(virtualServices);
+                    }
+                    setStep(1);
+                }
+            } catch (err) {
+                console.error('Error fetching services:', err);
+                setError('Could not load services. Please check your Supabase connection.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadServices();
+    }, [initialServiceIds]);
+
+    useEffect(() => {
+        if (!selectedDate) return;
+        const loadExistingBookings = async () => {
+            try {
+                setFetchingSlots(true);
+
+                const startOfDay = new Date(selectedDate);
+                startOfDay.setHours(0, 0, 0, 0);
+
+                const endOfDay = new Date(selectedDate);
+                endOfDay.setHours(23, 59, 59, 999);
+
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('start_time, end_time')
+                    .gte('start_time', startOfDay.toISOString())
+                    .lte('start_time', endOfDay.toISOString());
+
+                if (error) throw error;
+
+                setExistingBookings(data || []);
+            } catch (err) {
+                console.error('Error fetching existing bookings:', err);
+            } finally {
+                setFetchingSlots(false);
+            }
+        };
+        loadExistingBookings();
     }, [selectedDate]);
 
-    const fetchServices = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const { data, error } = await supabase
-                .from('services')
-                .select('*')
-                .eq('is_active', true);
-
-            if (error) throw error;
-
-            const fetchedServices = data || [];
-            setServices(fetchedServices);
-
-            // Auto-select initial services if provided
-            if (initialServiceIds && initialServiceIds.length > 0) {
-                const found = fetchedServices.filter((s) =>
-                    initialServiceIds.some((id) =>
-                        s.id === id ||
-                        s.title?.toLowerCase().includes(id.split('-')[0].toLowerCase())
-                    )
-                );
-
-                if (found.length > 0) {
-                    setSelectedServices(found);
-                    setStep(2);
-                }
-            }
-        } catch (err) {
-            console.error('Error fetching services:', err);
-            setError('Could not load services. Please check your Supabase connection.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchExistingBookings = async () => {
-        try {
-            setFetchingSlots(true);
-
-            const startOfDay = new Date(selectedDate);
-            startOfDay.setHours(0, 0, 0, 0);
-
-            const endOfDay = new Date(selectedDate);
-            endOfDay.setHours(23, 59, 59, 999);
-
-            const { data, error } = await supabase
-                .from('bookings')
-                .select('start_time, end_time')
-                .gte('start_time', startOfDay.toISOString())
-                .lte('start_time', endOfDay.toISOString());
-
-            if (error) throw error;
-
-            setExistingBookings(data || []);
-        } catch (err) {
-            console.error('Error fetching existing bookings:', err);
-        } finally {
-            setFetchingSlots(false);
-        }
-    };
+    
 
     const handleServiceToggle = (service) => {
-        setSelectedServices((prev) => {
+        setPrimaryServices((prev) => {
             const isAlreadySelected = prev.some((s) => s.id === service.id);
 
             if (isAlreadySelected) {
@@ -132,6 +178,17 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
         setSelectedTime(time);
     };
 
+    const handleComplimentaryToggle = (service) => {
+        setComplimentaryServices((prev) => {
+            const isAlreadySelected = prev.some((s) => s.id === service.id);
+            if (isAlreadySelected) {
+                return prev.filter((s) => s.id !== service.id);
+            }
+            // Usually allow only one complimentary add-on or a few
+            return [...prev, service];
+        });
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setClientInfo((prev) => ({ ...prev, [name]: value }));
@@ -144,7 +201,9 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
         const slotStart = new Date(selectedDate);
         slotStart.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
 
-        const totalDuration = selectedServices.reduce(
+        const allSelected = [...primaryServices, ...complimentaryServices];
+
+        const totalDuration = allSelected.reduce(
             (total, s) => total + (s.duration_minutes || 60),
             0
         );
@@ -162,7 +221,7 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (selectedServices.length === 0 || !selectedDate || !selectedTime) {
+        if (primaryServices.length === 0 || !selectedDate || !selectedTime) {
             setError('Please complete all booking steps before submitting.');
             return;
         }
@@ -175,7 +234,9 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
             const startTime = new Date(selectedDate);
             startTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
 
-            const totalDuration = selectedServices.reduce(
+            const allSelected = [...primaryServices, ...complimentaryServices];
+
+            const totalDuration = allSelected.reduce(
                 (total, s) => total + (s.duration_minutes || 60),
                 0
             );
@@ -186,17 +247,21 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
             let maxPrice = 0;
             let isRange = false;
 
-            selectedServices.forEach((s) => {
-                const prices = s.price_display?.match(/\d+[,]?\d*/g);
+            primaryServices.concat(complimentaryServices).forEach((s) => {
+                const prices = s.price_display?.match(/\d+[,]?\d*K?/gi);
 
                 if (prices) {
-                    const nums = prices.map((p) => parseInt(p.replace(/,/g, ''), 10));
+                    const nums = prices.map((p) => {
+                        let val = parseInt(p.replace(/,/g, '').replace(/K/gi, ''), 10);
+                        if (p.toLowerCase().includes('k')) val *= 1000;
+                        return val;
+                    });
 
                     if (nums.length > 1) {
                         minPrice += nums[0];
                         maxPrice += nums[1];
                         isRange = true;
-                    } else {
+                    } else if (nums.length === 1) {
                         minPrice += nums[0];
                         maxPrice += nums[0];
                     }
@@ -210,12 +275,13 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                 ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`
                 : formatPrice(minPrice);
 
-            const { error: insertError } = await supabase
+            // Try to insert with all columns first
+            let { data: inserted, error: insertError } = await supabase
                 .from('bookings')
                 .insert([
                     {
-                        service_id: selectedServices[0].id,
-                        selected_service_ids: selectedServices.map((s) => s.id),
+                        service_id: primaryServices[0].id.includes('virtual') ? null : primaryServices[0].id,
+                        selected_service_ids: allSelected.filter(s => !s.id.includes('virtual')).map((s) => s.id),
                         total_estimated_price: totalPriceDisplay,
                         start_time: startTime.toISOString(),
                         end_time: endTime.toISOString(),
@@ -225,21 +291,103 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                         client_phone: clientInfo.phone,
                         notes: clientInfo.notes
                     }
-                ]);
+                ])
+                .select()
+                .single();
 
-            if (insertError) throw insertError;
+            // If it fails with a missing column error, try a fallback insert with core columns
+            if (insertError) {
+                console.warn('Full insert failed, attempting fallback:', insertError.message);
+                
+                // Construct notes with extra info since columns are missing
+                const enrichedNotes = `
+[EXTRA INFO] 
+Group: ${clientInfo.groupName}
+Estimated Price: ${totalPriceDisplay}
+All Services: ${allSelected.map(s => s.title).join(', ')}
+-----------------
+${clientInfo.notes}
+                `.trim();
+
+                const { data: fallbackInserted, error: fallbackError } = await supabase
+                    .from('bookings')
+                    .insert([
+                        {
+                            service_id: primaryServices[0].id.includes('virtual') ? null : primaryServices[0].id,
+                            start_time: startTime.toISOString(),
+                            end_time: endTime.toISOString(),
+                            client_name: clientInfo.name,
+                            client_email: clientInfo.email,
+                            client_phone: clientInfo.phone,
+                            notes: enrichedNotes
+                        }
+                    ])
+                    .select()
+                    .single();
+
+                if (fallbackError) throw fallbackError;
+                inserted = fallbackInserted;
+            }
+
+            try {
+                const formattedDate = selectedDate.toLocaleDateString('en-KE', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+
+                const { data: fnData, error: fnErr } = await supabase.functions.invoke('send-booking-emails', {
+                    body: {
+                        bookingId: inserted?.id,
+                        clientName: clientInfo.name,
+                        groupName: clientInfo.groupName,
+                        clientEmail: clientInfo.email,
+                        clientPhone: clientInfo.phone,
+                        notes: clientInfo.notes,
+                        primaryServices: primaryServices.map((s) => ({
+                            title: s.title,
+                            price_display: s.price_display
+                        })),
+                        complimentaryServices: complimentaryServices.map((s) => ({
+                            title: s.title
+                        })),
+                        selectedDate: formattedDate,
+                        selectedTime,
+                        totalEstimatedPrice: totalPriceDisplay
+                    }
+                });
+
+                if (fnErr) {
+                    console.error('Full Edge Function Error:', fnErr);
+                    setEmailError(`Function error: ${fnErr.message || 'Unknown network error'}`);
+                    
+                    if (fnErr.message?.includes('Failed to fetch')) {
+                        console.warn('Network error: This might be a CORS issue or the function is not deployed.');
+                    }
+                } else if (fnData?.success === false) {
+                    console.error('Email sending failed:', fnData.error);
+                    setEmailError(`Delivery failed: ${fnData.error}`);
+                } else {
+                    console.log('Email sent successfully:', fnData);
+                    setEmailError(null);
+                }
+            } catch (emailErr) {
+                console.error('Error triggering email function:', emailErr);
+                setEmailError(`Trigger error: ${emailErr.message}`);
+            }
 
             setStep(4);
         } catch (err) {
-            console.error('Error creating booking:', err);
-            setError('Failed to book session. Please try again.');
+            console.error('Unexpected frontend error:', err);
+            setError(`Booking failed: ${err.message}`);
         } finally {
             setSubmitting(false);
         }
     };
 
-    const nextStep = () => setStep((prev) => prev + 1);
-    const prevStep = () => setStep((prev) => prev - 1);
+    const nextStep = () => setStep((s) => Math.min(s + 1, 4));
+    const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
     if (loading) {
         return (
@@ -262,12 +410,25 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                 </button>
 
                 <div>
-                    <h2 className="text-2xl font-bold text-nova-navy">Book Your Session</h2>
+                    <h2 className="text-2xl font-bold text-nova-navy">Complete Your Booking</h2>
                     <p className="text-nova-gray-500">
                         {step <= 3 ? `Step ${step} of 3` : 'Booking Confirmed'}
                     </p>
                 </div>
             </div>
+
+            {step === 1 && primaryServices.length > 0 && (
+                <div className="mb-8 p-6 bg-nova-navy/5 border border-nova-navy/10 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <span className="text-nova-navy/60 text-[10px] uppercase tracking-widest font-bold mb-1 block">Your Primary Selection</span>
+                        <h4 className="text-xl font-bold text-nova-navy">{primaryServices[0]?.title}</h4>
+                        <p className="text-nova-gold font-bold">{primaryServices[0]?.price_display || 'Retainer Based'}</p>
+                    </div>
+                    <div className="hidden md:block">
+                        <CheckCircle2 className="w-12 h-12 text-nova-gold opacity-20" />
+                    </div>
+                </div>
+            )}
 
             {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
@@ -283,57 +444,82 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
-                        className="space-y-4"
+                        className="space-y-8"
                     >
-                        <h3 className="text-xl font-semibold mb-6">Select a Service</h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {services.map((service) => {
-                                const isSelected = selectedServices.some((s) => s.id === service.id);
-
-                                return (
-                                    <div
-                                        key={service.id}
-                                        onClick={() => handleServiceToggle(service)}
-                                        className={`p-6 rounded-xl border-2 transition-all cursor-pointer hover:shadow-lg ${isSelected
-                                                ? 'border-nova-gold bg-nova-gold/5'
-                                                : 'border-gray-200 bg-white'
-                                            }`}
-                                    >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h4 className="font-bold text-lg text-nova-navy">
-                                                {service.title}
-                                            </h4>
-                                            {isSelected && (
-                                                <CheckCircle2 className="w-5 h-5 text-nova-gold" />
-                                            )}
-                                        </div>
-
-                                        <p className="text-nova-gray-600 text-sm mb-4 line-clamp-2">
-                                            {service.description}
-                                        </p>
-
-                                        <div className="flex items-center text-nova-gold font-bold">
-                                            <span>
-                                                {service.price_display ||
-                                                    (service.price === 0
-                                                        ? 'Free Consultation'
-                                                        : `KES ${service.price}`)}
-                                            </span>
-                                            <span className="ml-auto text-xs text-nova-gray-400">
-                                                {service.duration_minutes} min
-                                            </span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                        {/* Expert Guidance Banner */}
+                        <div className="bg-nova-navy text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10">
+                                <Sparkles className="w-24 h-24" />
+                            </div>
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <ShieldCheck className="w-5 h-5 text-nova-gold" />
+                                    <span className="text-nova-gold font-bold text-xs uppercase tracking-widest">Expert Recommendations</span>
+                                </div>
+                                <h3 className="text-xl font-bold mb-2 text-white">Maximize Your Engagement</h3>
+                                <p className="text-nova-gray-300 text-sm leading-relaxed max-w-2xl">
+                                    As financial experts with 20+ years of experience, we ensure that your advisory focus is built on a professional foundation for long-term wealth strategy.
+                                </p>
+                            </div>
                         </div>
+
+                        <section>
+                            <h3 className="text-xl font-semibold mb-4 text-nova-navy flex items-center gap-2">
+                                2. Finalize with a Complimentary Add-on
+                                <span className="text-nova-gold text-[10px] bg-nova-gold/10 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">Expert Recommended</span>
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {allServices
+                                    .filter((s) => s.price === 0 || s.price_display?.toLowerCase()?.includes('complimentary'))
+                                    .map((service) => {
+                                    const isSelected = complimentaryServices.some((s) => s.id === service.id);
+
+                                        return (
+                                            <div
+                                                key={service.id}
+                                                onClick={() => handleComplimentaryToggle(service)}
+                                                className={`p-6 rounded-xl border-2 transition-all cursor-pointer hover:shadow-lg ${isSelected
+                                                        ? 'border-nova-gold bg-nova-gold/5 shadow-md'
+                                                        : 'border-gray-200 bg-white'
+                                                    }`}
+                                            >
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <h4 className="font-bold text-lg text-nova-navy">
+                                                        {service.title}
+                                                    </h4>
+                                                    {isSelected && (
+                                                        <CheckCircle2 className="w-5 h-5 text-nova-gold" />
+                                                    )}
+                                                </div>
+
+                                                <p className="text-nova-gray-600 text-sm mb-4 line-clamp-2">
+                                                    {service.description}
+                                                </p>
+
+                                                <div className="flex items-center text-nova-gold font-bold">
+                                                    <span>
+                                                        {service.price_display ||
+                                                            (service.price === 0
+                                                                ? 'Complimentary'
+                                                                : `KES ${service.price}`)}
+                                                    </span>
+                                                    <span className="ml-auto text-xs text-nova-gray-400">
+                                                        {service.duration_minutes} min
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+                        </section>
+
+
 
                         <div className="flex justify-end mt-8">
                             <button
                                 onClick={nextStep}
-                                disabled={selectedServices.length === 0}
-                                className={`px-8 py-3 rounded-lg font-bold flex items-center gap-2 transition-all ${selectedServices.length > 0
+                                disabled={primaryServices.length === 0}
+                                className={`px-8 py-3 rounded-lg font-bold flex items-center gap-2 transition-all ${primaryServices.length > 0
                                         ? 'bg-nova-gold text-nova-navy shadow-lg hover:bg-yellow-500'
                                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                     }`}
@@ -396,10 +582,10 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                                                         onClick={() => handleTimeSelect(time)}
                                                         disabled={booked}
                                                         className={`py-3 rounded-lg border text-sm font-medium transition-all ${selectedTime === time
-                                                                ? 'bg-nova-gold border-nova-gold text-nova-navy shadow-md'
-                                                                : booked
-                                                                    ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
-                                                                    : 'bg-white border-gray-200 text-nova-gray-600 hover:border-nova-gold'
+                                                            ? 'bg-nova-gold border-nova-gold text-nova-navy shadow-md'
+                                                            : booked
+                                                                ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
+                                                                : 'bg-white border-gray-200 text-nova-gray-600 hover:border-nova-gold'
                                                             }`}
                                                     >
                                                         {time}
@@ -422,21 +608,21 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                                 onClick={prevStep}
                                 className="px-6 py-2 text-nova-navy font-medium hover:bg-gray-50 rounded-lg transition-colors"
                             >
-                                Back to Services
+                                Back
                             </button>
 
                             <button
                                 onClick={nextStep}
                                 disabled={
-                                    selectedServices.length === 0 ||
+                                    primaryServices.length === 0 ||
                                     !selectedDate ||
                                     !selectedTime
                                 }
-                                className={`px-8 py-3 rounded-lg font-bold flex items-center gap-2 transition-all ${selectedServices.length > 0 &&
-                                        selectedDate &&
-                                        selectedTime
-                                        ? 'bg-nova-gold text-nova-navy shadow-lg hover:bg-yellow-500'
-                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                className={`px-8 py-3 rounded-lg font-bold flex items-center gap-2 transition-all ${primaryServices.length > 0 &&
+                                    selectedDate &&
+                                    selectedTime
+                                    ? 'bg-nova-gold text-nova-navy shadow-lg hover:bg-yellow-500'
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                     }`}
                             >
                                 Continue <ArrowRight className="w-4 h-4" />
@@ -545,7 +731,7 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                                 </div>
 
                                 <div className="pt-4 flex flex-col items-center gap-4">
-                                    {selectedServices.length > 0 &&
+                                    {primaryServices.length > 0 &&
                                         selectedDate &&
                                         selectedTime && (
                                             <div className="w-full p-4 bg-nova-navy/5 rounded-xl text-sm space-y-3 mb-4">
@@ -553,52 +739,71 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                                                     Booking Summary:
                                                 </p>
 
-                                                <div className="space-y-1">
-                                                    <p className="text-nova-gray-500 text-[10px] uppercase tracking-wider font-bold">
-                                                        Selected Services:
-                                                    </p>
+                                                <div className="space-y-3">
+                                                    <div>
+                                                        <p className="text-nova-gray-500 text-[10px] uppercase tracking-wider font-bold mb-1">
+                                                            Primary Service:
+                                                        </p>
+                                                        {primaryServices.map((s) => (
+                                                            <div
+                                                                key={s.id}
+                                                                className="flex justify-between items-center bg-white/80 p-2 rounded border border-nova-navy/5"
+                                                            >
+                                                                <span className="font-bold text-nova-navy">
+                                                                    {s.title}
+                                                                </span>
+                                                                <span className="text-nova-gold font-bold">
+                                                                    {s.price_display || 'Retainer Based'}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
 
-                                                    {selectedServices.map((s) => (
-                                                        <div
-                                                            key={s.id}
-                                                            className="flex justify-between items-center bg-white/50 p-2 rounded border border-nova-navy/5"
-                                                        >
-                                                            <span className="font-medium">
-                                                                {s.title}
-                                                            </span>
-                                                            <span className="text-nova-gold text-xs">
-                                                                {s.price_display}
-                                                            </span>
+                                                    {complimentaryServices.length > 0 && (
+                                                        <div>
+                                                            <p className="text-nova-gray-500 text-[10px] uppercase tracking-wider font-bold mb-1">
+                                                                Complimentary Add-on:
+                                                            </p>
+                                                            {complimentaryServices.map((s) => (
+                                                                <div
+                                                                    key={s.id}
+                                                                    className="flex justify-between items-center bg-white/50 p-2 rounded border border-nova-navy/5"
+                                                                >
+                                                                    <span className="font-medium text-nova-navy/80 italic">
+                                                                        {s.title}
+                                                                    </span>
+                                                                    <span className="text-green-600 font-bold text-xs uppercase tracking-tighter bg-green-50 px-2 py-0.5 rounded">
+                                                                        Ksh 0
+                                                                    </span>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))}
+                                                    )}
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4 text-xs pt-2 border-t border-nova-navy/10">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-nova-gray-400 font-medium">Date & Time:</span>
+                                                        <span className="font-bold text-nova-navy capitalize">
+                                                            {selectedDate.toLocaleDateString('en-KE', { weekday: 'short', month: 'short', day: 'numeric' })} at {selectedTime}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex flex-col text-right">
+                                                        <span className="text-nova-gray-400 font-medium">Total Duration:</span>
+                                                        <span className="font-bold text-nova-navy">
+                                                            {primaryServices.concat(complimentaryServices).reduce(
+                                                                (t, s) => t + (s.duration_minutes || 60),
+                                                                0
+                                                            )} mins
+                                                        </span>
+                                                    </div>
                                                 </div>
 
                                                 {clientInfo.groupName && (
-                                                    <p>
-                                                        <span className="text-nova-gray-500">
-                                                            Group:
-                                                        </span>{' '}
-                                                        {clientInfo.groupName}
+                                                    <p className="text-[10px] text-nova-gray-400 italic">
+                                                        Booking on behalf of: <span className="text-nova-navy font-bold">{clientInfo.groupName}</span>
                                                     </p>
                                                 )}
-
-                                                <div className="pt-1 border-t border-nova-navy/10 flex justify-between items-center text-nova-navy font-bold">
-                                                    <span>Total Duration:</span>
-                                                    <span>
-                                                        {selectedServices.reduce(
-                                                            (t, s) =>
-                                                                t +
-                                                                (s.duration_minutes || 60),
-                                                            0
-                                                        )}{' '}
-                                                        mins
-                                                    </span>
-                                                </div>
-
-                                                <p className="text-nova-gray-500 italic text-[10px]">
-                                                    Date: {selectedDate.toDateString()} at{' '}
-                                                    {selectedTime}
-                                                </p>
                                             </div>
                                         )}
 
@@ -623,7 +828,7 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                                         disabled={submitting}
                                         className="text-nova-gray-500 hover:text-nova-navy transition-colors font-medium"
                                     >
-                                        Change date or time
+                                        Back
                                     </button>
                                 </div>
                             </form>
@@ -643,14 +848,14 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                         </div>
 
                         <h2 className="text-3xl font-bold text-nova-navy mb-4">
-                            You're All Set!
+                            Booking Confirmed
                         </h2>
 
                         <div className="text-nova-gray-600 mb-8 max-w-md mx-auto">
                             <p className="mb-4">Your session for:</p>
 
                             <div className="space-y-2 mb-6">
-                                {selectedServices.map((s) => (
+                                {primaryServices.concat(complimentaryServices).map((s) => (
                                     <div
                                         key={s.id}
                                         className="bg-nova-navy/5 p-3 rounded-lg border border-nova-navy/10 text-nova-navy font-bold"
@@ -675,14 +880,31 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                                 </span>
                                 .
                             </p>
+                            <div className="mt-6 text-sm text-nova-navy bg-nova-navy/5 border border-nova-navy/10 p-4 rounded-lg">
+                                <p className="font-semibold">Your booking has been confirmed.</p>
+                                <p>A confirmation email has been sent to the client at {clientInfo.email}.</p>
+                                <p>Nova Wealth has also been notified at info@novawealth.co.ke.</p>
+                            </div>
+
+                            {emailError && (
+                                <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg flex items-start gap-3 text-left">
+                                    <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5 shrink-0" />
+                                    <div>
+                                        <p className="text-orange-800 font-bold text-xs uppercase mb-1">Email Delivery Notice</p>
+                                        <p className="text-orange-700 text-xs text-balance">
+                                            The booking was saved, but the confirmation email could not be sent. <br/>
+                                            <strong>Error:</strong> {emailError}
+                                        </p>
+                                        <p className="text-orange-600 text-[10px] mt-2 italic">
+                                            Note: If using a test sender, ensure you are sending to the Resend account owner's email.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <p className="text-nova-gray-500 mb-12">
-                            Booking has been saved successfully for{' '}
-                            <span className="font-medium text-nova-navy">
-                                {clientInfo.email}
-                            </span>
-                            .
+                            Booking details have been saved successfully.
                         </p>
 
                         <button
@@ -699,3 +921,7 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
 };
 
 export default BookingManager;
+BookingManager.propTypes = {
+    onBack: PropTypes.func.isRequired,
+    initialServiceIds: PropTypes.array
+};

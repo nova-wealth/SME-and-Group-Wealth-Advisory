@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Calendar = ({ onDateSelect, selectedDate }) => {
@@ -98,6 +99,11 @@ const Calendar = ({ onDateSelect, selectedDate }) => {
             </div>
         </div>
     );
+};
+
+Calendar.propTypes = {
+    onDateSelect: PropTypes.func.isRequired,
+    selectedDate: PropTypes.instanceOf(Date),
 };
 
 export default Calendar;
