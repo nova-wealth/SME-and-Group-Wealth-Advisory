@@ -19,27 +19,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import Calendar from './Calendar';
+import { SERVICE_DATA, calculateBookingTotals } from '../utils/bookingUtils';
 
-const SERVICE_DATA = {
-    'onb-1': { title: 'Chama Onboarding', price: 'KES 10,000' },
-    'onb-2': { title: 'SME / Entrepreneur Onboarding', price: 'KES 20,000' },
-    'onb-3': { title: 'SACCO Onboarding', price: 'KES 30,000' },
-    'ret-1': { title: 'Chama — Small (<20 members)', price: 'KES 100K - 200K' },
-    'ret-2': { title: 'Chama — Medium (21-50 members)', price: 'KES 200K - 350K' },
-    'ret-3': { title: 'SME — Small (Turnover 5M-50M)', price: 'KES 170K - 350K' },
-    'ret-4': { title: 'SME — Medium (Turnover 50M-500M)', price: 'KES 350K - 700K' },
-    'ret-5': { title: 'SACCO — Small (<500 members)', price: 'KES 280K - 520K' },
-    'ret-6': { title: 'SACCO — Medium (500-2,000 members)', price: 'KES 500K - 850K' },
-    'spec-1': { title: 'Investment Policy Statement (IPS)', price: 'KES 30K - 80K' },
-    'spec-2': { title: 'Financial Wellness Workshop', price: 'KES 15K - 50K' },
-    'spec-3': { title: 'Business Valuation Advisory', price: 'KES 80K - 250K' },
-    'spec-4': { title: 'Occupational Pension Setup', price: 'KES 40K - 100K' },
-    'spec-5': { title: 'Governance Review', price: 'KES 25K - 60K' },
-    'spec-6': { title: 'Pick Our Brain from Nova Wealth Experts', price: 'KES 20,000' },
-    'comp-1': { title: 'SME Strategic Advisory', price: 'Complimentary' },
-    'comp-2': { title: 'Group Wealth Planning', price: 'Complimentary' },
-    'comp-3': { title: 'Tax & Compliance Audit', price: 'Complimentary' }
-};
 
 const BookingManager = ({ onBack, initialServiceIds = [] }) => {
     const [step, setStep] = useState(1);
@@ -201,12 +182,7 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
         const slotStart = new Date(selectedDate);
         slotStart.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
 
-        const allSelected = [...primaryServices, ...complimentaryServices];
-
-        const totalDuration = allSelected.reduce(
-            (total, s) => total + (s.duration_minutes || 60),
-            0
-        );
+        const { totalDuration } = calculateBookingTotals(primaryServices, complimentaryServices);
 
         const slotEnd = new Date(slotStart.getTime() + totalDuration * 60000);
 
@@ -234,46 +210,9 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
             const startTime = new Date(selectedDate);
             startTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
 
-            const allSelected = [...primaryServices, ...complimentaryServices];
-
-            const totalDuration = allSelected.reduce(
-                (total, s) => total + (s.duration_minutes || 60),
-                0
-            );
+            const { totalDuration, totalPriceDisplay } = calculateBookingTotals(primaryServices, complimentaryServices);
 
             const endTime = new Date(startTime.getTime() + totalDuration * 60000);
-
-            let minPrice = 0;
-            let maxPrice = 0;
-            let isRange = false;
-
-            primaryServices.concat(complimentaryServices).forEach((s) => {
-                const prices = s.price_display?.match(/\d+[,]?\d*K?/gi);
-
-                if (prices) {
-                    const nums = prices.map((p) => {
-                        let val = parseInt(p.replace(/,/g, '').replace(/K/gi, ''), 10);
-                        if (p.toLowerCase().includes('k')) val *= 1000;
-                        return val;
-                    });
-
-                    if (nums.length > 1) {
-                        minPrice += nums[0];
-                        maxPrice += nums[1];
-                        isRange = true;
-                    } else if (nums.length === 1) {
-                        minPrice += nums[0];
-                        maxPrice += nums[0];
-                    }
-                }
-            });
-
-            const formatPrice = (num) =>
-                `KES ${new Intl.NumberFormat('en-KE').format(num)}`;
-
-            const totalPriceDisplay = isRange
-                ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`
-                : formatPrice(minPrice);
 
             // Try to insert with all columns first
             let { data: inserted, error: insertError } = await supabase
@@ -281,7 +220,7 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                 .insert([
                     {
                         service_id: primaryServices[0].id.includes('virtual') ? null : primaryServices[0].id,
-                        selected_service_ids: allSelected.filter(s => !s.id.includes('virtual')).map((s) => s.id),
+                        selected_service_ids: [...primaryServices, ...complimentaryServices].filter(s => !s.id.includes('virtual')).map((s) => s.id),
                         total_estimated_price: totalPriceDisplay,
                         start_time: startTime.toISOString(),
                         end_time: endTime.toISOString(),
@@ -302,9 +241,10 @@ const BookingManager = ({ onBack, initialServiceIds = [] }) => {
                 // Construct notes with extra info since columns are missing
                 const enrichedNotes = `
 [EXTRA INFO] 
+[EXTRA INFO] 
 Group: ${clientInfo.groupName}
 Estimated Price: ${totalPriceDisplay}
-All Services: ${allSelected.map(s => s.title).join(', ')}
+All Services: ${[...primaryServices, ...complimentaryServices].map(s => s.title).join(', ')}
 -----------------
 ${clientInfo.notes}
                 `.trim();
@@ -791,10 +731,7 @@ ${clientInfo.notes}
                                                     <div className="flex flex-col text-right">
                                                         <span className="text-nova-gray-400 font-medium">Total Duration:</span>
                                                         <span className="font-bold text-nova-navy">
-                                                            {primaryServices.concat(complimentaryServices).reduce(
-                                                                (t, s) => t + (s.duration_minutes || 60),
-                                                                0
-                                                            )} mins
+                                                            {calculateBookingTotals(primaryServices, complimentaryServices).totalDuration} mins
                                                         </span>
                                                     </div>
                                                 </div>
